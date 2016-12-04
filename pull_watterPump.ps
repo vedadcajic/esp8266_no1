@@ -1,0 +1,215 @@
+For ($i=1; $i -lt 20; $i++) {
+ Invoke-WebRequest http://192.168.0.108//gpio/0
+ Start-Sleep -s 1
+
+
+
+#include <ESP8266WiFi.h>
+
+const char* ssid = "BezZica";
+const char* password = "Pegla1982";
+// Create an instance of the server
+// specify the port to listen on as an argument
+WiFiServer server(80);
+
+
+void setup() {
+  // put your setup code here, to run once:
+
+  Serial.begin(115200);
+  delay(10);
+
+  // prepare GPIO
+  pinMode(A0, OUTPUT);
+  int D1 = 5;
+  pinMode(D1, OUTPUT);
+  digitalWrite(D1, 0);
+
+// Connect to WiFi network
+  Serial.println();
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  
+  WiFi.begin(ssid, password);
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  
+  // Start the server
+  server.begin();
+  Serial.println("Server started");
+
+  // Print the IP address
+  Serial.println(WiFi.localIP());
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+  // Check if a client has connected
+  WiFiClient client = server.available();
+  if (!client) {
+    return;
+  }
+  
+  // Wait until the client sends some data
+  Serial.println("new client");
+  while(!client.available()){
+    delay(1);
+  }
+  
+  // Read the first line of the request
+  String req = client.readStringUntil('\r');
+  Serial.println(req);
+  client.flush();
+  
+  // Match the request
+  int val;
+  String s = "";
+  if (req.indexOf("/gpio/0") != -1){
+    digitalWrite(D1, 0);
+    s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nSetting D1 to LOW";
+    s += "</html>\n";
+    }
+  else if (req.indexOf("/gpio/1") != -1){
+    digitalWrite(D1, 1);
+    s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nSetting D1 to HIGH";
+    s += "</html>\n";
+    }
+  else if (req.indexOf("/ping_initpump_request") != -1){
+    int EnoughWater = digitalRead(D0);
+    if (EnoughWater == 1){
+      s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nPlant is dry, starting pump";
+      s += "</html>\n";
+      digitalWrite(D1, 1);
+    }
+    else{
+      s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nPlant has watter";
+      s += "</html>\n";
+      digitalWrite(D1, 0);
+    }
+    s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nSetting D1 to HIGH";
+    s += "</html>\n";
+    }
+  else {
+    Serial.println("invalid request");
+    client.stop();
+    return;
+  }
+
+  client.flush();
+  // Send the response to the client
+  client.print(s);
+  delay(10);
+  Serial.println("Client disonnected");
+}
+#include <ESP8266WiFi.h>
+
+const char* ssid = "BezZica";
+const char* password = "Pegla1982";
+// Create an instance of the server
+// specify the port to listen on as an argument
+WiFiServer server(80);
+
+
+void setup() {
+  // put your setup code here, to run once:
+
+  Serial.begin(115200);
+  delay(10);
+
+  // prepare GPIO
+  pinMode(A0, OUTPUT);
+  int D1 = 5;
+  pinMode(D1, OUTPUT);
+  digitalWrite(D1, 0);
+
+// Connect to WiFi network
+  Serial.println();
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  
+  WiFi.begin(ssid, password);
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  
+  // Start the server
+  server.begin();
+  Serial.println("Server started");
+
+  // Print the IP address
+  Serial.println(WiFi.localIP());
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+  // Check if a client has connected
+  WiFiClient client = server.available();
+  if (!client) {
+    return;
+  }
+  
+  // Wait until the client sends some data
+  Serial.println("new client");
+  while(!client.available()){
+    delay(1);
+  }
+  
+  // Read the first line of the request
+  String req = client.readStringUntil('\r');
+  Serial.println(req);
+  client.flush();
+  
+  // Match the request
+  int val;
+  String s = "";
+  if (req.indexOf("/gpio/0") != -1){
+    digitalWrite(D1, 0);
+    s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nSetting D1 to LOW";
+    s += "</html>\n";
+    }
+  else if (req.indexOf("/gpio/1") != -1){
+    digitalWrite(D1, 1);
+    s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nSetting D1 to HIGH";
+    s += "</html>\n";
+    }
+  else if (req.indexOf("/ping_initpump_request") != -1){
+    int EnoughWater = digitalRead(D0);
+    if (EnoughWater == 1){
+      s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nPlant is dry, starting pump";
+      s += "</html>\n";
+      digitalWrite(D1, 1);
+    }
+    else{
+      s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nPlant has watter";
+      s += "</html>\n";
+      digitalWrite(D1, 0);
+    }
+    s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nSetting D1 to HIGH";
+    s += "</html>\n";
+    }
+  else {
+    Serial.println("invalid request");
+    client.stop();
+    return;
+  }
+
+  client.flush();
+  // Send the response to the client
+  client.print(s);
+  delay(10);
+  Serial.println("Client disonnected");
+}
+}
